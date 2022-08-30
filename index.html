@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>collapse</title>
+  <style>
+    table {
+      font-family: arial, sans-serif;
+      border-collapse: collapse;
+      width: 100%;
+      box-shadow: 20px 0px 10px 0px rgba(0,0,0,0.5);
+    }
+
+    td,
+    th {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
+    }
+
+    tr:nth-child(even) {
+      background-color: #dddddd;
+    }
+
+    .doc {
+      width: 600px;
+      margin: 0 auto;
+      /* height: 200vh; */
+      outline: 1px solid red;
+    }
+
+    .reading {
+      position: fixed;
+      width: 100px;
+      height: 30px;
+      background-color: blue;
+      bottom: 10px;
+    }
+
+    .reading2 {
+      position: fixed;
+      width: 100px;
+      height: 30px;
+      background-color: blue;
+      bottom: 10px;
+      transition: left 0.1s ease-in-out, width 0.1s ease-in-out;
+    }
+
+    .rect {
+      min-height: 200px;
+      outline: 1px solid blue;
+      margin-top: 100px;
+      /* margin-top: 32px; */
+    }
+
+    .rect.rect1 {
+      margin-left: -50px;
+      margin-right: -50px;
+    }
+
+    .rect.rect2 {
+      margin-left: -100px;
+      margin-right: -100px;
+    }
+
+    .rect.rect3 {
+      margin-left: -150px;
+      margin-right: -150px;
+    }
+
+    .rect.rect4 {
+      margin-left: -200px;
+      margin-right: -200px;
+    }
+
+    .rect.rect5 {
+      margin-left: -250px;
+      margin-right: -250px;
+    }
+
+    .rect.rect6 {
+      margin-left: -300px;
+      margin-right: -300px;
+    }
+
+    .rect.rect7 {
+      margin-left: -350px;
+      margin-right: -350px;
+    }
+
+    .rect.rect8 {
+      margin-left: -400px;
+      margin-right: -400px;
+    }
+  </style>
+  <script src="./js/lodash.js"></script>
+</head>
+
+<body>
+  <label for="size">size</label>
+  <input type="text" id="size">
+  <button onclick="start()">开始</button>
+  <div class="reading" style="opacity: 0;pointer-events: none;"></div>
+  <div class="reading2"></div>
+  <div class="doc"></div>
+
+  <script>
+    const SIZE = 30
+    function initDoc(size = 100) {
+      let html = ''
+      for(let i = 0; i < size; i++) {
+        const rand = _.random(1, 8)
+        html += `
+        <div class="rect rect${rand}">
+          <table>
+            <tr>
+              <th>Company</th>
+              <th>Contact</th>
+              <th>Country</th>
+            </tr>
+            <tr>
+              <td>Alfreds Futterkiste</td>
+              <td>Maria Anders</td>
+              <td>Germany</td>
+            </tr>
+            <tr>
+              <td>Centro comercial Moctezuma</td>
+              <td>Francisco Chang</td>
+              <td>Mexico</td>
+            </tr>
+            <tr>
+              <td>Ernst Handel</td>
+              <td>Roland Mendel</td>
+              <td>Austria</td>
+            </tr>
+            <tr>
+              <td>Island Trading</td>
+              <td>Helen Bennett</td>
+              <td>UK</td>
+            </tr>
+            <tr>
+              <td>Laughing Bacchus Winecellars</td>
+              <td>Yoshi Tannamuri</td>
+              <td>Canada</td>
+            </tr>
+            <tr>
+              <td>Magazzini Alimentari Riuniti</td>
+              <td>Giovanni Rovelli</td>
+              <td>Italy</td>
+            </tr>
+          </table>
+        </div>
+        `;
+      }
+      document.querySelector('.doc').innerHTML = html
+    }
+    function intersectRect(rectA, rectB) {
+      return !(
+        rectB.left >= rectA.right ||
+        rectB.right <= rectA.left ||
+        rectB.top >= rectA.bottom ||
+        rectB.bottom <= rectA.top
+      );
+    }
+
+    function hasBlocked(targetRect) {
+      const arr = Array.from(document.querySelectorAll('.rect'))
+      for (let i = 0; i < arr.length; i++) {
+        const rect = arr[i].getBoundingClientRect();
+        console.log(rect)
+        if (intersectRect(rect, targetRect)) {
+          return rect
+        }
+      }
+      return null
+    }
+    function start() {
+      const throttledFunc = _.throttle(() => {
+        const doc = document.querySelector('.doc')
+        const docRect = doc.getBoundingClientRect()
+        const reading = document.querySelector('.reading')
+        const reading2 = document.querySelector('.reading2')
+        const readingRect = reading.getBoundingClientRect()
+        const res = hasBlocked(readingRect)
+        console.log(res)
+        if (res) {
+          // 左边空间非常小的时候，直接缩到最左
+          if (res.left < 100) {
+            reading2.style.width = '50px'
+            w = 50
+            reading2.style.left = '0'
+            return
+          }
+          reading2.style.left = `${res.left - readingRect.width}px`
+        } else {
+          if (docRect.left >= 100) {
+            reading2.style.width = '100px'
+          }
+          reading2.style.left = `${docRect.left - readingRect.width}px`
+        }
+      }, 100, {
+        trailing: true,
+        leading: true
+      });
+
+      const inputSizeVal = +document.querySelector('#size').value
+      console.log('qin', inputSizeVal)
+      initDoc(inputSizeVal || SIZE)
+      document.addEventListener('scroll', throttledFunc)
+      ; (() => {
+        const doc = document.querySelector('.doc')
+        const docRect = doc.getBoundingClientRect()
+        const reading = document.querySelector('.reading')
+        const readingRect = reading.getBoundingClientRect()
+        reading.style.left = `${docRect.left - readingRect.width}px`
+      })()
+  
+      const observer = new MutationObserver((entries) => {
+        throttledFunc()
+      })
+      observer.observe(document.querySelector('.doc'), {
+        attributes: true,
+        childList: true,
+        characterData: true
+      })
+      document.querySelectorAll('.rect').forEach(node => {
+        node.addEventListener('click', () => {
+          const rectCls = node.classList.value.split(' ')[1] || `rect${_.random(1,8)}`
+          console.log('qin', rectCls)
+          node.classList.toggle(rectCls)
+        })
+        observer.observe(node, {
+          attributes: true
+        })
+      })
+    }
+  </script>
+</body>
+
+</html>
