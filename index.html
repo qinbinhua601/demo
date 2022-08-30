@@ -47,6 +47,10 @@
       background-color: blue;
       bottom: 10px;
       transition: left 0.1s ease-in-out, width 0.1s ease-in-out;
+      color: #fff;
+      line-height: 30px;
+      text-align: center;
+      font-size: 14px;
     }
 
     .rect {
@@ -101,10 +105,10 @@
 
 <body>
   <label for="size">size (100, 200, 300, 500)</label>
-  <input type="text" id="size">
+  <input type="text" id="size" value="50">
   <button onclick="start()">start</button>
   <div class="reading" style="opacity: 0;pointer-events: none;"></div>
-  <div class="reading2"></div>
+  <div class="reading2">阅读进度</div>
   <div class="doc"></div>
 
   <script>
@@ -188,16 +192,18 @@
         console.log(res)
         if (res) {
           // 左边空间非常小的时候，直接缩到最左
-          if (res.left < 100) {
+          if (res.left < 200) {
             reading2.style.width = '50px'
+            reading2.innerText = '进度'
             w = 50
             reading2.style.left = '0'
             return
           }
           reading2.style.left = `${res.left - readingRect.width}px`
         } else {
-          if (docRect.left >= 100) {
+          if (docRect.left >= 200) {
             reading2.style.width = '100px'
+            reading2.innerText = '阅读进度'
           }
           reading2.style.left = `${docRect.left - readingRect.width}px`
         }
@@ -217,6 +223,7 @@
         const readingRect = reading.getBoundingClientRect()
         reading.style.left = `${docRect.left - readingRect.width}px`
       })()
+      throttledFunc()
   
       const observer = new MutationObserver((entries) => {
         throttledFunc()
